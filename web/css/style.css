@@ -120,7 +120,7 @@ main {
 /* ── screen + right controls (E2/K2, E3/K3) ─────────── */
 .screen-area {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 14px;
 }
 .screen-area .screen-wrap { flex: 1; min-width: 0; }
@@ -129,6 +129,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
   flex-shrink: 0;
 }
