@@ -88,9 +88,29 @@ A phased build. **Phases 0–4 (core) are implemented. Bolt deployment active (2
 - [x] Grid füllt volle Panel-Breite (`repeat(16, 1fr)`), Arc skaliert proportional
 - [x] Params-Panel klappt auf ohne Grid/Arc zu verschieben
 
-## Phase 6 — Editor & polish
-- [ ] maiden-like in-browser code editor (edit + save + run)
-- [ ] Screenshot/GIF export of the screen
+## Phase 6 — Maiden editor & polish
+
+### Phase 6a — Script editor ✅ (11.6.2026)
+- [x] **maiden** button next to load/↻ opens Ace code editor modal
+- [x] `GET /api/script?path=` — read Lua source (guard: only `*.lua` inside SCRIPTS_DIR)
+- [x] `PUT /api/script` — write Lua source back to disk (direct Dropbox volume mount)
+- [x] **save** / **save & load** (saves + sends `{t:load}` to restart script)
+- [x] Ace 1.32.6, monokai theme, Lua syntax mode, 900×680 modal
+
+### Phase 6b — File browser ⬜
+- [ ] Tree view of `/scripts` folder in the maiden modal
+- [ ] Create / rename / delete files and folders
+- [ ] New-script template
+
+### Phase 6c — Catalog / package manager ⬜
+- [ ] Fetch norns community catalog JSON (https://github.com/monome/norns-community)
+- [ ] Browse + search available scripts
+- [ ] Install via `git clone` into `/scripts` (needs `git` in container)
+- [ ] Uninstall (delete folder)
+
+### Phase 6d — Polish ⬜
+- [ ] Vendor Ace locally (offline / Bolt deployment without CDN)
+- [ ] Screenshot/GIF export of the screen canvas
 - [ ] Connect a physical grid/arc via serialosc bridge (WebSerial or host OSC)
 - [ ] Save/restore session; multiple device profiles
 - [ ] Package as a one-click app

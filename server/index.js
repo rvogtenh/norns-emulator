@@ -13,7 +13,7 @@
 import { spawn } from "node:child_process";
 import { performance } from "node:perf_hooks";
 import { createServer } from "node:http";
-import { readdir, stat, readFile } from "node:fs/promises";
+import { readdir, stat, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
@@ -37,6 +37,8 @@ app.use((req, res, next) => {
   }
   next();
 });
+// Parse JSON bodies (maiden editor saves script source via PUT /api/script).
+app.use(express.json({ limit: "4mb" }));
 // API routes must be registered before express.static so they are not shadowed.
 
 // Recursively find norns scripts: <name>/<name>.lua or a top-level <name>.lua.
@@ -74,6 +76,44 @@ app.get("/api/scripts", async (_req, res) => {
   const list = await findScripts(SCRIPTS_DIR);
   list.sort((a, b) => a.rel.localeCompare(b.rel));
   res.json(list);
+});
+
+// ── maiden editor: read/write a script's Lua source ─────────────────────────
+// Both endpoints restrict access to *.lua files inside SCRIPTS_DIR so the
+// editor can never read or overwrite arbitrary files on the host.
+const SCRIPTS_ROOT = path.resolve(SCRIPTS_DIR);
+
+function resolveScriptPath(p) {
+  if (!p) return null;
+  const resolved = path.resolve(p);
+  if (!resolved.startsWith(SCRIPTS_ROOT + path.sep)) return null;
+  if (!resolved.endsWith(".lua")) return null;
+  return resolved;
+}
+
+app.get("/api/script", async (req, res) => {
+  const resolved = resolveScriptPath(req.query.path);
+  if (!resolved) return res.status(400).json({ error: "invalid script path" });
+  try {
+    const text = await readFile(resolved, "utf8");
+    res.json({ path: resolved, text });
+  } catch (e) {
+    res.status(404).json({ error: e.message });
+  }
+});
+
+app.put("/api/script", async (req, res) => {
+  const resolved = resolveScriptPath(req.body && req.body.path);
+  if (!resolved) return res.status(400).json({ error: "invalid script path" });
+  if (typeof (req.body && req.body.text) !== "string") {
+    return res.status(400).json({ error: "missing text" });
+  }
+  try {
+    await writeFile(resolved, req.body.text, "utf8");
+    res.json({ ok: true, path: resolved });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Track currently loaded script path (set when browser sends a "load" WS message).

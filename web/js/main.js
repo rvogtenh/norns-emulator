@@ -472,6 +472,81 @@ $("reload-btn").addEventListener("click", (e) => {
   e.target.blur();
 });
 
+// ── maiden script editor ───────────────────────────────────────────────────
+let _maidenEditor = null;
+let _maidenPath = null;
+
+function _maidenStatus(msg, kind = "") {
+  const el = $("maiden-status");
+  el.textContent = msg;
+  el.className = "maiden-status" + (kind ? " " + kind : "");
+}
+
+async function openMaiden() {
+  const path = $("script-select").value || lastScriptPath;
+  if (!path) { log("maiden: no script selected", "err"); return; }
+  if (typeof ace === "undefined") { log("maiden: editor failed to load", "err"); return; }
+
+  _maidenPath = path;
+  $("maiden-name").textContent = path.split("/").pop();
+  $("maiden-overlay").classList.remove("hidden");
+
+  if (!_maidenEditor) {
+    _maidenEditor = ace.edit("maiden-editor");
+    _maidenEditor.setTheme("ace/theme/monokai");
+    _maidenEditor.session.setMode("ace/mode/lua");
+    _maidenEditor.setOptions({ fontSize: "13px", useSoftTabs: true, tabSize: 2 });
+  }
+  _maidenStatus("loading…");
+  try {
+    const r = await fetch(`${BASE_PATH}/api/script?path=${encodeURIComponent(path)}`);
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    const { text } = await r.json();
+    _maidenEditor.setValue(text, -1);
+    _maidenStatus(path);
+    _maidenEditor.focus();
+  } catch (e) {
+    _maidenStatus("could not load: " + e.message, "err");
+  }
+}
+
+function closeMaiden() {
+  $("maiden-overlay").classList.add("hidden");
+}
+
+async function saveMaiden() {
+  if (!_maidenPath || !_maidenEditor) return false;
+  _maidenStatus("saving…");
+  try {
+    const r = await fetch(`${BASE_PATH}/api/script`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: _maidenPath, text: _maidenEditor.getValue() }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    _maidenStatus("saved ✓", "ok");
+    log("maiden: saved " + _maidenPath.split("/").pop(), "info");
+    return true;
+  } catch (e) {
+    _maidenStatus("save failed: " + e.message, "err");
+    return false;
+  }
+}
+
+$("maiden-btn").addEventListener("click", (e) => { openMaiden(); e.target.blur(); });
+$("maiden-close").addEventListener("click", closeMaiden);
+$("maiden-save").addEventListener("click", () => saveMaiden());
+$("maiden-save-run").addEventListener("click", async () => {
+  if (await saveMaiden()) {
+    lastScriptPath = _maidenPath;
+    send({ t: "load", path: _maidenPath });
+    closeMaiden();
+  }
+});
+$("maiden-overlay").addEventListener("click", (e) => {
+  if (e.target.id === "maiden-overlay") closeMaiden();
+});
+
 $("tempo").addEventListener("change", (e) => {
   send({ t: "tempo", bpm: parseFloat(e.target.value) });
 });

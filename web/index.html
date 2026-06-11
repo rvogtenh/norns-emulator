@@ -8,6 +8,8 @@
        The surrounding web UI keeps its own font stack (css/style.css). -->
   <link rel="stylesheet" href="css/fonts.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <!-- maiden script editor: Ace (same editor the real norns maiden uses) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ace.min.js"></script>
 </head>
 <body>
   <div class="app">
@@ -144,6 +146,7 @@
             <label></label>
             <button id="load-btn">load</button>
             <button id="reload-btn" title="reload current script">↻</button>
+            <button id="maiden-btn" title="edit the selected script">maiden</button>
           </div>
 
           <div class="panel-section row">
@@ -275,6 +278,22 @@
         </div>
         <p class="setting-hint">Background and panel sliders set the grey level of
           the page and boxes; accent recolours highlights. Live &amp; saved.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── maiden script editor modal ── -->
+  <div id="maiden-overlay" class="fp-overlay hidden" aria-modal="true" role="dialog">
+    <div class="maiden-dialog">
+      <div class="fp-header">
+        <span class="fp-title">maiden — <span id="maiden-name">script</span></span>
+        <button id="maiden-close" title="close">✕</button>
+      </div>
+      <div id="maiden-editor" class="maiden-editor"></div>
+      <div class="maiden-footer">
+        <span id="maiden-status" class="maiden-status"></span>
+        <button id="maiden-save">save</button>
+        <button id="maiden-save-run">save &amp; load</button>
       </div>
     </div>
   </div>
