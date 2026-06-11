@@ -113,12 +113,22 @@ A phased build. **Phases 0–4 (core) are implemented. Bolt deployment active (2
 - [x] Catalog overlay: search (name/author/desc/tags), install + remove buttons, ✓ installed badge
 - [x] Dockerfile: `git` + `ca-certificates`; docker-compose: `community/` volume mount
 
-### Phase 6d — Polish ⬜
-- [ ] Vendor Ace locally (offline / Bolt deployment without CDN)
+### Phase 6d — Polish (partial)
+- [x] Vendor Ace locally (offline / Bolt deployment without CDN) ✅ (11.6.2026)
 - [ ] Screenshot/GIF export of the screen canvas
 - [ ] Connect a physical grid/arc via serialosc bridge (WebSerial or host OSC)
 - [ ] Save/restore session; multiple device profiles
 - [ ] Package as a one-click app
+
+### Bugfixes & Design (12.6.2026)
+- [x] Arc ring 3+4 hit detection — `_toCanvas()` scales client→canvas coords
+- [x] `clock.internal.start/stop` forwards to `clock.transport` callbacks (fixes CC2 pattern recording/playback)
+- [x] Reverb (ConvolverNode, synthetic IR) + Compressor (DynamicsCompressorNode) — `audio.rev_*` / `audio.comp_*` Lua API
+- [x] FX panel (reverb + compressor combined, default collapsed)
+- [x] Layout: E2/K2 + E3/K3 beside screen on desktop, below on mobile
+- [x] All controls (E1/K1/E2/K2/E3/K3) unified to smaller size (52px dial)
+- [x] `scripts/` renamed to `tools/`, removed from repo
+- [x] Ace Lua syntax fix (`mode-lua.js` without `.min` suffix)
 
 ## Known divergences from hardware (tracked)
 - Auto-redraw after enc/key/grid/arc input (convenience; hardware does not)

@@ -86,7 +86,10 @@ npm run dev        # node --watch server/index.js → http://localhost:5151
    **save / load** persist named presets (PSET 1–99). **⊙** per param → MIDI CC learn.
 9. **REPL** — evaluate Lua live: `params:set("cutoff", 800)` or `print(clock.get_tempo())`.
 10. **↻** — hot-reload current script.
-11. **maiden** — opens the built-in script editor:
+11. **fx** — click **show** to expand reverb + compressor panel.
+    Reverb: send level, return level, decay time. Compressor: threshold, ratio, attack, release.
+    Both activate automatically when a slider is moved.
+12. **maiden** — opens the built-in script editor:
     - File tree on the left (expand/collapse folders, click `.lua` to open)
     - Ace editor (Lua syntax, monokai theme) on the right
     - **save** saves to disk; **save & load** saves and immediately reloads the script
@@ -101,6 +104,7 @@ npm run dev        # node --watch server/index.js → http://localhost:5151
 | screen (full cairo path model) | ✅ |
 | encoders + keys (mouse + keyboard) | ✅ |
 | metro, clock (run/sleep/sync/tempo) | ✅ |
+| clock.internal.start/stop → transport callbacks | ✅ |
 | params (all types, panel, PSETs, MIDI CC map) | ✅ |
 | grid + arc (LED buffers + click/drag GUI) | ✅ |
 | MIDI in/out (WebMIDI, vports 1–16) | ✅ |
@@ -109,9 +113,12 @@ npm run dev        # node --watch server/index.js → http://localhost:5151
 | engine: Ack | ✅ WebAudio |
 | engine: Glut | ✅ WebAudio |
 | softcut (6 voices, loop/rec/rate/fades, ADC/mic) | ✅ AudioWorklet |
+| reverb (ConvolverNode, send/return/time) | ✅ WebAudio |
+| compressor (DynamicsCompressorNode) | ✅ WebAudio |
 | fileselect (browser modal → Lua callback) | ✅ |
 | audio.file_info (WAV/AIFF header parser) | ✅ |
 | maiden script editor (Ace, tree browser, file ops) | ✅ |
+| catalog / package manager (353 community scripts) | ✅ |
 | include() / require / vendored norns libs | ✅ |
 
 ### Not yet implemented
