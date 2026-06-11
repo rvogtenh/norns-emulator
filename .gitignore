@@ -11,4 +11,6 @@ data/*
 
 # local tooling
 .claude/
+.dockerignore
+.dropboxignore
 
