@@ -46,32 +46,32 @@
           </div>
         </div><!-- /ctrl-pair-h -->
 
-        <!-- Screen -->
-        <div class="screen-wrap">
-          <canvas id="screen" width="128" height="64"></canvas>
-        </div>
-
-        <!-- Bottom row: E2+K2 / E3+K3, stacked, right-aligned -->
-        <div class="controls-bottom">
-          <div class="ctrl-pair-v">
-            <div class="enc" data-n="2">
-              <label>E2 <kbd>e</kbd><kbd>r</kbd></label>
-              <div class="dial-wrap">
-                <div class="dial-ring" id="ring2"></div>
-                <div class="dial" id="enc2"><div class="dial-dot"></div></div>
-              </div>
-            </div>
-            <button class="key" data-n="2" id="key2">K2<kbd>s</kbd></button>
+        <!-- Screen + E2/K2 + E3/K3 side by side -->
+        <div class="screen-area">
+          <div class="screen-wrap">
+            <canvas id="screen" width="128" height="64"></canvas>
           </div>
-          <div class="ctrl-pair-v">
-            <div class="enc" data-n="3">
-              <label>E3 <kbd>u</kbd><kbd>i</kbd></label>
-              <div class="dial-wrap">
-                <div class="dial-ring" id="ring3"></div>
-                <div class="dial" id="enc3"><div class="dial-dot"></div></div>
+          <div class="controls-right">
+            <div class="right-encs">
+              <div class="enc enc-sm" data-n="2">
+                <label>E2 <kbd>e</kbd><kbd>r</kbd></label>
+                <div class="dial-wrap">
+                  <div class="dial-ring" id="ring2"></div>
+                  <div class="dial" id="enc2"><div class="dial-dot"></div></div>
+                </div>
+              </div>
+              <div class="enc enc-sm" data-n="3">
+                <label>E3 <kbd>u</kbd><kbd>i</kbd></label>
+                <div class="dial-wrap">
+                  <div class="dial-ring" id="ring3"></div>
+                  <div class="dial" id="enc3"><div class="dial-dot"></div></div>
+                </div>
               </div>
             </div>
-            <button class="key" data-n="3" id="key3">K3<kbd>d</kbd></button>
+            <div class="right-keys">
+              <button class="key key-sm" data-n="2" id="key2">K2<kbd>s</kbd></button>
+              <button class="key key-sm" data-n="3" id="key3">K3<kbd>d</kbd></button>
+            </div>
           </div>
         </div>
 
