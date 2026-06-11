@@ -105,11 +105,13 @@ A phased build. **Phases 0–4 (core) are implemented. Bolt deployment active (2
 - [x] New-script template (engine, enc/key/redraw stubs)
 - [x] After file ops: tree + script-select both refreshed
 
-### Phase 6c — Catalog / package manager ⬜
-- [ ] Fetch norns community catalog JSON (https://github.com/monome/norns-community)
-- [ ] Browse + search available scripts
-- [ ] Install via `git clone` into `/scripts` (needs `git` in container)
-- [ ] Uninstall (delete folder)
+### Phase 6c — Catalog / package manager ✅ (11.6.2026)
+- [x] `GET /api/catalog` — proxy + in-memory cache of norns-community catalog (353 entries)
+- [x] `GET /api/catalog/installed` — list installed dirs in `community/`
+- [x] `POST /api/catalog/install` — `git clone --depth=1` into `/scripts/community/<name>` (GIT_ASKPASS workaround for non-TTY)
+- [x] Uninstall via existing `DELETE /api/scriptentry`
+- [x] Catalog overlay: search (name/author/desc/tags), install + remove buttons, ✓ installed badge
+- [x] Dockerfile: `git` + `ca-certificates`; docker-compose: `community/` volume mount
 
 ### Phase 6d — Polish ⬜
 - [ ] Vendor Ace locally (offline / Bolt deployment without CDN)
