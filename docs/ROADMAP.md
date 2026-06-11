@@ -97,10 +97,13 @@ A phased build. **Phases 0–4 (core) are implemented. Bolt deployment active (2
 - [x] **save** / **save & load** (saves + sends `{t:load}` to restart script)
 - [x] Ace 1.32.6, monokai theme, Lua syntax mode, 900×680 modal
 
-### Phase 6b — File browser ⬜
-- [ ] Tree view of `/scripts` folder in the maiden modal
-- [ ] Create / rename / delete files and folders
-- [ ] New-script template
+### Phase 6b — File browser ✅ (11.6.2026)
+- [x] Tree view of `/scripts` folder in the maiden modal (lazy expand, remembers open dirs)
+- [x] Click file → open in editor; click folder → expand/collapse
+- [x] `POST /api/scriptdir` — create folder; `DELETE /api/scriptentry` — delete file/dir (recursive); `PATCH /api/scriptentry` — rename/move (all guarded to SCRIPTS_ROOT)
+- [x] **+file** / **+folder** / **rename** / **delete** toolbar buttons
+- [x] New-script template (engine, enc/key/redraw stubs)
+- [x] After file ops: tree + script-select both refreshed
 
 ### Phase 6c — Catalog / package manager ⬜
 - [ ] Fetch norns community catalog JSON (https://github.com/monome/norns-community)
