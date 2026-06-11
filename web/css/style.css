@@ -395,9 +395,11 @@ button:hover { background: #3a3a42; border-color: var(--amber-lo); color: var(--
 }
 
 @media (max-width: 900px) {
-  main { flex-direction: column; align-items: center; }
-  .left-col { width: var(--device-w); max-width: 100%; align-items: stretch; }
-  .devices-extra { max-width: var(--device-w); width: 100%; }
+  body { padding: 12px 16px; }
+  main { flex-direction: column; align-items: stretch; }
+  .left-col { width: 100%; align-items: stretch; }
+  .device { width: 100%; }
+  .devices-extra { max-width: 100%; width: 100%; }
 }
 
 .grid-panel,
