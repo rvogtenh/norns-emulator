@@ -594,6 +594,7 @@ async function _maidenOpenFile(filePath) {
   _maidenPath = filePath;
   $("maiden-name").textContent = filePath.split("/").pop();
   if (!_maidenEditor) {
+    ace.config.set("basePath", BASE_PATH + "js/ace/");
     _maidenEditor = ace.edit("maiden-editor");
     _maidenEditor.setTheme("ace/theme/monokai");
     _maidenEditor.session.setMode("ace/mode/lua");
