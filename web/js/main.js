@@ -1026,6 +1026,12 @@ $("mixer-toggle").addEventListener("click", (e) => {
   e.target.textContent = body.classList.contains("hidden") ? "show" : "hide";
 });
 
+$("fx-toggle").addEventListener("click", (e) => {
+  const body = $("fx-body");
+  body.classList.toggle("hidden");
+  e.target.textContent = body.classList.contains("hidden") ? "show" : "hide";
+});
+
 // ── reverb controls ──────────────────────────────────────────────────────────
 function _syncRevUI() {
   $("rev-on").checked = audio._revOn ?? false;

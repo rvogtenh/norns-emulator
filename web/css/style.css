@@ -1027,6 +1027,11 @@ button:hover { background: #3a3a42; border-color: var(--amber-lo); color: var(--
 .hdr-btns { display: flex; gap: 6px; }
 
 /* reverb + compressor fx panels */
+.fx-section-label {
+  font-size: 11px; color: var(--fg-faint);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 4px;
+}
 .fx-body { display: flex; flex-direction: column; gap: 6px; }
 .fx-row {
   display: flex; align-items: center; gap: 6px;
