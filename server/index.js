@@ -10,7 +10,9 @@
 //   browser  --ws-->  server  --stdin-->  lua    (input events, load, eval)
 //   lua      --stdout-->  server  --ws-->  browser (screen frames, grid/arc LEDs, engine, logs)
 
-import { spawn } from "node:child_process";
+import { spawn, execFile } from "node:child_process";
+import { promisify } from "node:util";
+const execFileAsync = promisify(execFile);
 import { performance } from "node:perf_hooks";
 import { createServer } from "node:http";
 import { readdir, stat, readFile, writeFile, mkdir, rename as fsRename, rm } from "node:fs/promises";
@@ -162,6 +164,51 @@ app.patch("/api/scriptentry", async (req, res) => {
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+// ── catalog / package manager ────────────────────────────────────────────────
+const CATALOG_URL = "https://raw.githubusercontent.com/monome/norns-community/main/community.json";
+const COMMUNITY_DIR = path.join(SCRIPTS_DIR, "community");
+let _catalogCache = null;
+
+// GET /api/catalog — fetch + cache community catalog
+app.get("/api/catalog", async (_req, res) => {
+  try {
+    if (!_catalogCache) {
+      const r = await fetch(CATALOG_URL);
+      if (!r.ok) throw new Error(`catalog fetch failed: ${r.status}`);
+      _catalogCache = await r.json();
+    }
+    res.json(_catalogCache);
+  } catch (e) {
+    res.status(502).json({ error: e.message });
+  }
+});
+
+// GET /api/catalog/installed — list installed community script folder names
+app.get("/api/catalog/installed", async (_req, res) => {
+  try {
+    const entries = await readdir(COMMUNITY_DIR, { withFileTypes: true });
+    res.json(entries.filter(e => e.isDirectory()).map(e => e.name));
+  } catch {
+    res.json([]);
+  }
+});
+
+// POST /api/catalog/install  { project_url, project_name }  — git clone --depth=1
+app.post("/api/catalog/install", async (req, res) => {
+  const { project_url, project_name } = req.body || {};
+  if (!project_url || !project_name) return res.status(400).json({ error: "missing fields" });
+  // Sanitise project_name: allow only word chars, dots and dashes
+  if (!/^[\w.\-]+$/.test(project_name)) return res.status(400).json({ error: "invalid name" });
+  const dest = path.join(COMMUNITY_DIR, project_name);
+  try {
+    await execFileAsync("git", ["clone", "--depth=1", project_url, dest],
+      { timeout: 90000, env: { ...process.env, GIT_ASKPASS: "/bin/true", GIT_TERMINAL_PROMPT: "0" } });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.stderr || e.message });
   }
 });
 

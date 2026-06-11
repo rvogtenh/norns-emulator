@@ -24,6 +24,8 @@ services:
       - "../new project:/scripts/new project"
       # Bundled demo scripts:
       - "./examples:/scripts/examples"
+      # Community scripts installed via catalog:
+      - "./community:/scripts/community"
       # User audio files (norns _path.audio inside the container):
       - "./audio:/audio"
       # Also mount as the norns-native path so hardcoded /home/we/dust/audio

@@ -3,7 +3,7 @@ FROM node:24-bookworm-slim
 
 # Lua 5.3 runs the matron-shim (the real norns scripts execute here).
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends lua5.3 \
+    && apt-get install -y --no-install-recommends lua5.3 git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

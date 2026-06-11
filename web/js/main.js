@@ -771,6 +771,127 @@ $("maiden-overlay").addEventListener("click", (e) => {
   if (e.target.id === "maiden-overlay") closeMaiden();
 });
 
+// ── catalog / package manager ─────────────────────────────────────────────
+let _catalogEntries = [];
+let _catalogInstalled = new Set();
+
+function _catalogSetStatus(msg) { $("catalog-status").textContent = msg; }
+
+function _catalogRender(filter = "") {
+  const list = $("catalog-list");
+  list.innerHTML = "";
+  const q = filter.toLowerCase().trim();
+  const filtered = q
+    ? _catalogEntries.filter(e =>
+        e.project_name?.toLowerCase().includes(q) ||
+        e.author?.toLowerCase().includes(q) ||
+        e.description?.toLowerCase().includes(q) ||
+        (e.tags || []).some(t => t.toLowerCase().includes(q)))
+    : _catalogEntries;
+
+  _catalogSetStatus(`${filtered.length} of ${_catalogEntries.length} scripts`);
+
+  for (const entry of filtered) {
+    const name   = entry.project_name || "";
+    const author = entry.author || "";
+    const desc   = entry.description || "";
+    const tags   = entry.tags || [];
+    const url    = entry.project_url || "";
+    const installed = _catalogInstalled.has(name);
+
+    const item = document.createElement("div");
+    item.className = "catalog-item";
+
+    const info = document.createElement("div");
+    info.className = "catalog-info";
+    info.innerHTML = `
+      <div><span class="catalog-name">${name}</span><span class="catalog-author">${author}</span></div>
+      <div class="catalog-desc" title="${desc.replace(/"/g,"&quot;")}">${desc}</div>
+      ${tags.length ? `<div class="catalog-tags">${tags.map(t => `<span class="catalog-tag">${t}</span>`).join("")}</div>` : ""}
+    `;
+
+    const action = document.createElement("div");
+    action.className = "catalog-action";
+
+    if (installed) {
+      const badge = document.createElement("span");
+      badge.className = "catalog-installed";
+      badge.textContent = "✓ installed";
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "remove";
+      removeBtn.style.marginTop = "4px";
+      removeBtn.style.display = "block";
+      removeBtn.addEventListener("click", async () => {
+        if (!confirm(`Remove "${name}"?`)) return;
+        removeBtn.disabled = true;
+        removeBtn.textContent = "…";
+        try {
+          const communityPath = _maidenRoot + "/community/" + name;
+          const r = await fetch(`${BASE_PATH}/api/scriptentry?path=${encodeURIComponent(communityPath)}`, { method: "DELETE" });
+          if (!r.ok) throw new Error((await r.json()).error);
+          _catalogInstalled.delete(name);
+          await loadScriptList();
+          _catalogRender($("catalog-search").value);
+        } catch (e) { alert("Remove failed: " + e.message); removeBtn.disabled = false; removeBtn.textContent = "remove"; }
+      });
+      action.append(badge, removeBtn);
+    } else {
+      const btn = document.createElement("button");
+      btn.textContent = "install";
+      btn.addEventListener("click", async () => {
+        btn.disabled = true; btn.textContent = "cloning…";
+        _catalogSetStatus(`Installing ${name}…`);
+        try {
+          const r = await fetch(`${BASE_PATH}/api/catalog/install`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ project_url: url, project_name: name }),
+          });
+          if (!r.ok) throw new Error((await r.json()).error);
+          _catalogInstalled.add(name);
+          await loadScriptList();
+          _catalogRender($("catalog-search").value);
+          _catalogSetStatus(`Installed ${name} ✓`);
+        } catch (e) {
+          _catalogSetStatus("Install failed: " + e.message);
+          btn.disabled = false; btn.textContent = "install";
+        }
+      });
+      action.appendChild(btn);
+    }
+
+    item.append(info, action);
+    list.appendChild(item);
+  }
+}
+
+async function openCatalog() {
+  $("catalog-overlay").classList.remove("hidden");
+  if (_catalogEntries.length) { _catalogRender($("catalog-search").value); return; }
+
+  _catalogSetStatus("Loading catalog…");
+  $("catalog-list").innerHTML = "";
+  try {
+    // Load catalog + installed list in parallel
+    const [catData, installed] = await Promise.all([
+      fetch(`${BASE_PATH}/api/catalog`).then(r => r.json()),
+      fetch(`${BASE_PATH}/api/catalog/installed`).then(r => r.json()),
+    ]);
+    _catalogEntries = catData.entries || [];
+    _catalogInstalled = new Set(installed);
+    _catalogRender();
+  } catch (e) {
+    _catalogSetStatus("Could not load catalog: " + e.message);
+  }
+}
+
+function closeCatalog() { $("catalog-overlay").classList.add("hidden"); }
+
+$("catalog-btn").addEventListener("click",   (e) => { openCatalog(); e.target.blur(); });
+$("catalog-close").addEventListener("click", closeCatalog);
+$("catalog-overlay").addEventListener("click", (e) => { if (e.target.id === "catalog-overlay") closeCatalog(); });
+$("catalog-search").addEventListener("input", (e) => _catalogRender(e.target.value));
+
 $("tempo").addEventListener("change", (e) => {
   send({ t: "tempo", bpm: parseFloat(e.target.value) });
 });

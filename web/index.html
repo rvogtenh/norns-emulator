@@ -146,7 +146,8 @@
             <label></label>
             <button id="load-btn">load</button>
             <button id="reload-btn" title="reload current script">↻</button>
-            <button id="maiden-btn" title="edit the selected script">maiden</button>
+            <button id="maiden-btn"   title="edit the selected script">maiden</button>
+            <button id="catalog-btn" title="browse &amp; install community scripts">catalog</button>
           </div>
 
           <div class="panel-section row">
@@ -279,6 +280,19 @@
         <p class="setting-hint">Background and panel sliders set the grey level of
           the page and boxes; accent recolours highlights. Live &amp; saved.</p>
       </div>
+    </div>
+  </div>
+
+  <!-- ── catalog overlay ── -->
+  <div id="catalog-overlay" class="fp-overlay hidden" aria-modal="true" role="dialog">
+    <div class="catalog-dialog">
+      <div class="fp-header">
+        <span class="fp-title">catalog</span>
+        <input id="catalog-search" type="search" placeholder="search…" autocomplete="off" />
+        <button id="catalog-close" title="close">✕</button>
+      </div>
+      <div id="catalog-status" class="catalog-status"></div>
+      <div id="catalog-list" class="catalog-list"></div>
     </div>
   </div>
 
