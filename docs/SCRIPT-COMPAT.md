@@ -1,6 +1,6 @@
 # Script compatibility (current set)
 
-Result of `node scripts/sweep.mjs` — loads every script, sends one encoder turn,
+Result of `node tools/sweep.mjs` — loads every script, sends one encoder turn,
 counts rendered screen frames. "OK" = script booted far enough to draw at least
 one frame within 1.2 s.
 
@@ -55,7 +55,7 @@ to draw. Use it interactively once audio files are available.
 
 ```bash
 norns-up          # or: docker compose up -d
-node scripts/sweep.mjs
+node tools/sweep.mjs
 ```
 
 Matron-side changes (`matron/`) need a container restart; browser-side (`web/`)

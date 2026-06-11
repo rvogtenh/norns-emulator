@@ -155,7 +155,7 @@ norns-emulator/
 ├── audio/                   user audio samples (not tracked in git)
 ├── data/                    script data / PSETs (not tracked in git)
 ├── examples/                demo scripts (hello, gridtest)
-├── scripts/                 test + utility scripts (sweep, e2e, sync)
+├── tools/                   dev tools (sweep compatibility test, e2e test, sync-from-norns)
 ├── docs/                    architecture, roadmap, API coverage, dev guide
 └── Dockerfile · docker-compose.yml
 ```

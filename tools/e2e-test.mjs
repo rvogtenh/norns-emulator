@@ -1,6 +1,6 @@
 // Tiny end-to-end test: connect to the running emulator over WebSocket,
 // load a script, send an encoder turn, and report the screen frames + logs.
-// Usage: node scripts/e2e-test.mjs [/scripts/examples/hello/hello.lua]
+// Usage: node tools/e2e-test.mjs [/scripts/examples/hello/hello.lua]
 import { WebSocket } from "ws";
 
 const PATH = process.argv[2] || "/scripts/examples/hello/hello.lua";

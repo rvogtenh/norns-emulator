@@ -133,7 +133,7 @@ via WebSocket so the viz flags are re-armed before the auto-render result arrive
 
 - **Compatibility sweep:**
   ```bash
-  node scripts/sweep.mjs
+  node tools/sweep.mjs
   ```
 
 ## pset persistence

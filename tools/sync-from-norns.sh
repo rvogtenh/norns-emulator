@@ -1,7 +1,7 @@
 #!/bin/bash
 # sync-from-norns.sh — pull dust/data and dust/audio from Norns → emulator
 #
-# Usage:  ./scripts/sync-from-norns.sh [norns-ip]
+# Usage:  ./tools/sync-from-norns.sh [norns-ip]
 #   default IP: 192.168.1.86
 
 NORNS_IP="${1:-192.168.1.86}"
