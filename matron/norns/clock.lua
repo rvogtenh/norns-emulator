@@ -103,11 +103,17 @@ function clock.cleanup()
   clock.threads = {}
 end
 
--- transport stubs (scripts may call these)
+-- transport stubs (scripts may override these)
 clock.transport = { start = function() end, stop = function() end, reset = function() end }
 clock.link = { set_tempo = function(t) clock.set_tempo(t) end, set_quantum = function() end }
 
-clock.internal = { set_tempo = function(t) clock.set_tempo(t) end, start = function() end, stop = function() end }
+clock.internal = {
+  set_tempo = function(t) clock.set_tempo(t) end,
+  -- Trigger clock.transport.start() so scripts that override it (e.g. Cheat Codes 2)
+  -- receive the start event and can set their transport.is_running flag.
+  start = function() clock.transport.start() end,
+  stop  = function() clock.transport.stop("internal") end,
+}
 
 function clock.add_params() end -- params for clock source; no-op in emulator
 
