@@ -288,6 +288,17 @@ function handle(msg) {
     case "softcut":       audio.handleSoftcut(msg); break;
     case "audio_adc_cut": audio.setAdcCutLevel(msg.level ?? 0); break;
     case "audio_eng_cut": audio.setEngCutLevel(msg.level ?? 0); break;
+    case "audio_rev_on":       audio.setRevOn(true);             _syncRevUI(); break;
+    case "audio_rev_off":      audio.setRevOn(false);            _syncRevUI(); break;
+    case "audio_rev_time":     audio.setRevTime(msg.v ?? 3.0);   break;
+    case "audio_rev_send":     audio.setRevSend(msg.v ?? 0);     break;
+    case "audio_rev_return":   audio.setRevReturn(msg.v ?? 0.8); break;
+    case "audio_comp_on":      audio.setCompOn(true);            _syncCompUI(); break;
+    case "audio_comp_off":     audio.setCompOn(false);           _syncCompUI(); break;
+    case "audio_comp_threshold": audio.setCompThreshold(msg.v ?? -12); break;
+    case "audio_comp_ratio":     audio.setCompRatio(msg.v ?? 4);       break;
+    case "audio_comp_attack":    audio.setCompAttack(msg.v ?? 0.005);  break;
+    case "audio_comp_release":   audio.setCompRelease(msg.v ?? 0.1);   break;
     case "fileselect_open":
       openFilePicker(msg.path || "/audio", msg.ext || "*", (selected) => {
         send({ t: "fileselect_result", cb_id: msg.cb_id, path: selected || "cancel" });
@@ -1013,6 +1024,57 @@ $("mixer-toggle").addEventListener("click", (e) => {
   const body = $("mixer-body");
   body.classList.toggle("hidden");
   e.target.textContent = body.classList.contains("hidden") ? "show" : "hide";
+});
+
+// ── reverb controls ──────────────────────────────────────────────────────────
+function _syncRevUI() {
+  $("rev-on").checked = audio._revOn ?? false;
+}
+$("rev-on").addEventListener("change", (e) => {
+  audio.enable(); audio.setRevOn(e.target.checked);
+});
+$("rev-send").addEventListener("input", (e) => {
+  const v = +e.target.value / 100;
+  $("rev-send-val").textContent = e.target.value;
+  audio.enable(); audio.setRevSend(v);
+  if (!audio._revOn && v > 0) { audio.setRevOn(true); _syncRevUI(); }
+});
+$("rev-return").addEventListener("input", (e) => {
+  $("rev-return-val").textContent = e.target.value;
+  audio.enable(); audio.setRevReturn(+e.target.value / 100);
+});
+$("rev-time").addEventListener("input", (e) => {
+  const t = +e.target.value / 10;  // 1-120 → 0.1-12s
+  $("rev-time-val").textContent = t.toFixed(1) + "s";
+  audio.enable(); audio.setRevTime(t);
+});
+
+// ── compressor controls ──────────────────────────────────────────────────────
+function _syncCompUI() {
+  $("comp-on").checked = audio._compOn ?? false;
+}
+$("comp-on").addEventListener("change", (e) => {
+  audio.enable(); audio.setCompOn(e.target.checked);
+});
+$("comp-thresh").addEventListener("input", (e) => {
+  $("comp-thresh-val").textContent = e.target.value + "dB";
+  audio.enable(); audio.setCompThreshold(+e.target.value);
+  if (!audio._compOn) { audio.setCompOn(true); _syncCompUI(); }
+});
+$("comp-ratio").addEventListener("input", (e) => {
+  $("comp-ratio-val").textContent = e.target.value + ":1";
+  audio.enable(); audio.setCompRatio(+e.target.value);
+  if (!audio._compOn) { audio.setCompOn(true); _syncCompUI(); }
+});
+$("comp-attack").addEventListener("input", (e) => {
+  $("comp-attack-val").textContent = e.target.value + "ms";
+  audio.enable(); audio.setCompAttack(+e.target.value / 1000);
+  if (!audio._compOn) { audio.setCompOn(true); _syncCompUI(); }
+});
+$("comp-release").addEventListener("input", (e) => {
+  $("comp-release-val").textContent = e.target.value + "ms";
+  audio.enable(); audio.setCompRelease(+e.target.value / 1000);
+  if (!audio._compOn) { audio.setCompOn(true); _syncCompUI(); }
 });
 $("tape-toggle").addEventListener("click", (e) => {
   const body = $("tape-body");

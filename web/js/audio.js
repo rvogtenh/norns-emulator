@@ -58,7 +58,39 @@ export class AudioHost {
     this.monBus.connect(this.master);
     this.tapeBus.connect(this.master);
     this.master.connect(this.outGain);
-    this.outGain.connect(this.ctx.destination);
+
+    // ── reverb ───────────────────────────────────────────────────────────
+    this._revSend   = this.ctx.createGain();   // send level (0 = off)
+    this._revSend.gain.value = 0;
+    this._convolver = this.ctx.createConvolver();
+    this._convolver.normalize = true;
+    this._revReturn = this.ctx.createGain();   // wet return level
+    this._revReturn.gain.value = 0.8;
+    this._revTime   = 3.0;                     // seconds
+    this._revOn     = false;
+    this._convolver.buffer = this._generateIR(this._revTime);
+    this.outGain.connect(this._revSend);
+    this._revSend.connect(this._convolver);
+    this._convolver.connect(this._revReturn);
+
+    // ── compressor ───────────────────────────────────────────────────────
+    this._comp = this.ctx.createDynamicsCompressor();
+    this._comp.threshold.value = -12;
+    this._comp.knee.value      =  6;
+    this._comp.ratio.value     =  4;
+    this._comp.attack.value    =  0.005;
+    this._comp.release.value   =  0.1;
+    this._compOn = false;
+    // Default: compressor is bypassed (transparent ratio=1, threshold=0)
+    this._comp.threshold.value = 0;
+    this._comp.ratio.value     = 1;
+
+    // ── output chain ─────────────────────────────────────────────────────
+    // dry:    outGain → comp → destination
+    // reverb: outGain → _revSend → convolver → _revReturn → comp → destination
+    this.outGain.connect(this._comp);
+    this._revReturn.connect(this._comp);
+    this._comp.connect(this.ctx.destination);
 
     // per-bus stereo level meters (L/R analyser per fader)
     this._meters = {};
@@ -458,5 +490,82 @@ export class AudioHost {
     a.href = this._tapeBlobUrl;
     a.download = `norns-tape-${Date.now()}.webm`;
     a.click();
+  }
+
+  // ── reverb ──────────────────────────────────────────────────────────────
+
+  // Generate a synthetic impulse response (exponentially decaying noise).
+  _generateIR(decayTime = 3.0) {
+    if (!this.ctx) return null;
+    const sr  = this.ctx.sampleRate;
+    const len = Math.max(sr * 0.1, Math.round(sr * decayTime));
+    const buf = this.ctx.createBuffer(2, len, sr);
+    for (let c = 0; c < 2; c++) {
+      const d = buf.getChannelData(c);
+      for (let i = 0; i < len; i++) {
+        d[i] = (Math.random() * 2 - 1) * Math.exp(-3 * i / len);
+      }
+    }
+    return buf;
+  }
+
+  setRevOn(on) {
+    if (!this._revSend) return;
+    this._revOn = !!on;
+    this._revSend.gain.value = this._revOn ? (this._revSendLevel ?? 0.3) : 0;
+  }
+
+  setRevSend(v) {           // 0-1: how much of the mix goes into the reverb
+    this._revSendLevel = v;
+    if (this._revSend && this._revOn) this._revSend.gain.value = v;
+  }
+
+  setRevReturn(v) {         // 0-1: wet level coming back from convolver
+    if (this._revReturn) this._revReturn.gain.value = v;
+  }
+
+  setRevTime(t) {           // decay time in seconds — regenerates IR
+    if (!this._convolver) return;
+    this._revTime = Math.max(0.1, Math.min(30, t));
+    this._convolver.buffer = this._generateIR(this._revTime);
+  }
+
+  // ── compressor ──────────────────────────────────────────────────────────
+
+  _compSavedSettings = { threshold: -12, ratio: 4, attack: 0.005, release: 0.1 };
+
+  setCompOn(on) {
+    if (!this._comp) return;
+    this._compOn = !!on;
+    if (this._compOn) {
+      const s = this._compSavedSettings;
+      this._comp.threshold.value = s.threshold;
+      this._comp.ratio.value     = s.ratio;
+      this._comp.attack.value    = s.attack;
+      this._comp.release.value   = s.release;
+    } else {
+      this._comp.threshold.value = 0;
+      this._comp.ratio.value     = 1;
+    }
+  }
+
+  setCompThreshold(db) {
+    this._compSavedSettings.threshold = db;
+    if (this._comp && this._compOn) this._comp.threshold.value = db;
+  }
+
+  setCompRatio(r) {
+    this._compSavedSettings.ratio = r;
+    if (this._comp && this._compOn) this._comp.ratio.value = r;
+  }
+
+  setCompAttack(t) {
+    this._compSavedSettings.attack = t;
+    if (this._comp && this._compOn) this._comp.attack.value = t;
+  }
+
+  setCompRelease(t) {
+    this._compSavedSettings.release = t;
+    if (this._comp && this._compOn) this._comp.release.value = t;
   }
 }

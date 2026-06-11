@@ -1026,6 +1026,22 @@ button:hover { background: #3a3a42; border-color: var(--amber-lo); color: var(--
 }
 .hdr-btns { display: flex; gap: 6px; }
 
+/* reverb + compressor fx panels */
+.fx-body { display: flex; flex-direction: column; gap: 6px; }
+.fx-row {
+  display: flex; align-items: center; gap: 6px;
+}
+.fx-row label {
+  width: 46px; font-size: 11px; color: var(--fg-dim); flex-shrink: 0;
+}
+.fx-row input[type="range"] {
+  flex: 1; accent-color: var(--amber); cursor: pointer;
+}
+.fx-val {
+  width: 38px; text-align: right;
+  font-size: 11px; color: var(--fg-faint); flex-shrink: 0;
+}
+
 .mixer-body {
   display: flex;
   gap: 10px;

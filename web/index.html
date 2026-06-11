@@ -99,6 +99,55 @@
         </div>
 
         <div class="mixtape-sec">
+          <div class="dev-header"><span>reverb</span></div>
+          <div class="fx-body">
+            <label class="chk-label"><input type="checkbox" id="rev-on" /> on</label>
+            <div class="fx-row">
+              <label>send</label>
+              <input type="range" id="rev-send" min="0" max="100" value="30" />
+              <span class="fx-val" id="rev-send-val">30</span>
+            </div>
+            <div class="fx-row">
+              <label>return</label>
+              <input type="range" id="rev-return" min="0" max="100" value="80" />
+              <span class="fx-val" id="rev-return-val">80</span>
+            </div>
+            <div class="fx-row">
+              <label>time</label>
+              <input type="range" id="rev-time" min="1" max="120" value="35" />
+              <span class="fx-val" id="rev-time-val">3.5s</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mixtape-sec">
+          <div class="dev-header"><span>compressor</span></div>
+          <div class="fx-body">
+            <label class="chk-label"><input type="checkbox" id="comp-on" /> on</label>
+            <div class="fx-row">
+              <label>thresh</label>
+              <input type="range" id="comp-thresh" min="-60" max="0" value="-12" />
+              <span class="fx-val" id="comp-thresh-val">-12dB</span>
+            </div>
+            <div class="fx-row">
+              <label>ratio</label>
+              <input type="range" id="comp-ratio" min="1" max="20" value="4" step="0.5" />
+              <span class="fx-val" id="comp-ratio-val">4:1</span>
+            </div>
+            <div class="fx-row">
+              <label>attack</label>
+              <input type="range" id="comp-attack" min="1" max="200" value="5" />
+              <span class="fx-val" id="comp-attack-val">5ms</span>
+            </div>
+            <div class="fx-row">
+              <label>release</label>
+              <input type="range" id="comp-release" min="10" max="1000" value="100" />
+              <span class="fx-val" id="comp-release-val">100ms</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mixtape-sec">
           <div class="dev-header">
             <span>tape</span>
             <button id="tape-toggle">hide</button>

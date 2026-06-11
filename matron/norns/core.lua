@@ -71,8 +71,24 @@ function core.install_globals()
     level_cut_cut = noop, level_dac = noop, level_adc = noop, level_eng = noop,
     level_ext = noop, level_monitor = noop, level_tape = noop,
     monitor_mono = noop, monitor_stereo = noop, monitor_off = noop, monitor_on = noop,
-    pitch_on = noop, pitch_off = noop, rev_on = noop, rev_off = noop,
-    comp_on = noop, comp_off = noop, output_level = noop, input_level = noop,
+    pitch_on = noop, pitch_off = noop,
+    -- reverb
+    rev_on  = function()  host.send({ t = "audio_rev_on"  }) end,
+    rev_off = function()  host.send({ t = "audio_rev_off" }) end,
+    reverb_time      = function(v) host.send({ t = "audio_rev_time",   v = v or 3.5 }) end,
+    reverb_size      = function(v) host.send({ t = "audio_rev_send",   v = (v or 50) / 100 }) end,
+    level_reverb     = function(v) host.send({ t = "audio_rev_return", v = v or 0.8 }) end,
+    level_cut_reverb = function(v) host.send({ t = "audio_rev_send",   v = v or 0 }) end,
+    level_monitor_reverb = noop,
+    -- compressor
+    comp_on  = function() host.send({ t = "audio_comp_on"  }) end,
+    comp_off = function() host.send({ t = "audio_comp_off" }) end,
+    comp_threshold = function(v) host.send({ t = "audio_comp_threshold", v = v or -12 }) end,
+    comp_ratio     = function(v) host.send({ t = "audio_comp_ratio",     v = v or 4   }) end,
+    comp_attack    = function(v) host.send({ t = "audio_comp_attack",    v = v or 0.005 }) end,
+    comp_release   = function(v) host.send({ t = "audio_comp_release",   v = v or 0.1 }) end,
+    comp_mix       = noop,
+    output_level = noop, input_level = noop,
     headphone_gain = noop, cut_enable = noop,
 
     -- Returns (channels, frames_at_48k, samplerate).
