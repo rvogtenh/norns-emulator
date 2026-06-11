@@ -401,6 +401,15 @@ button:hover { background: #3a3a42; border-color: var(--amber-lo); color: var(--
   .left-col { width: 100%; align-items: stretch; }
   .device { width: 100%; }
   .devices-extra { max-width: 100%; width: 100%; }
+
+  /* controls back below screen on mobile */
+  .screen-area { flex-direction: column; align-items: stretch; }
+  .controls-right {
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+  }
 }
 
 .grid-panel,
