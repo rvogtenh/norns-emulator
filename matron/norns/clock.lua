@@ -109,8 +109,8 @@ clock.link = { set_tempo = function(t) clock.set_tempo(t) end, set_quantum = fun
 
 clock.internal = {
   set_tempo = function(t) clock.set_tempo(t) end,
-  -- Trigger clock.transport.start() so scripts that override it (e.g. Cheat Codes 2)
-  -- receive the start event and can set their transport.is_running flag.
+  -- Forward to clock.transport.start/stop so scripts that override those callbacks
+  -- (e.g. Cheat Codes 2) receive the event and can manage their transport state.
   start = function() clock.transport.start() end,
   stop  = function() clock.transport.stop("internal") end,
 }
