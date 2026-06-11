@@ -13,7 +13,7 @@
 import { spawn } from "node:child_process";
 import { performance } from "node:perf_hooks";
 import { createServer } from "node:http";
-import { readdir, stat, readFile, writeFile } from "node:fs/promises";
+import { readdir, stat, readFile, writeFile, mkdir, rename as fsRename, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
@@ -111,6 +111,55 @@ app.put("/api/script", async (req, res) => {
   try {
     await writeFile(resolved, req.body.text, "utf8");
     res.json({ ok: true, path: resolved });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── maiden file-tree operations ──────────────────────────────────────────────
+// Looser guard than resolveScriptPath: allows any path inside SCRIPTS_ROOT
+// (dirs as well as .lua files). Used for mkdir / delete / rename.
+function resolveScriptsEntry(p) {
+  if (!p) return null;
+  const resolved = path.resolve(p);
+  if (resolved !== SCRIPTS_ROOT && !resolved.startsWith(SCRIPTS_ROOT + path.sep)) return null;
+  // Prevent escaping via ../../ etc. (path.resolve already normalises, double-check)
+  if (resolved.includes("\0")) return null;
+  return resolved;
+}
+
+// POST /api/scriptdir  { path }  — create directory (recursive)
+app.post("/api/scriptdir", async (req, res) => {
+  const resolved = resolveScriptsEntry(req.body && req.body.path);
+  if (!resolved) return res.status(400).json({ error: "invalid path" });
+  try {
+    await mkdir(resolved, { recursive: true });
+    res.json({ ok: true, path: resolved });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE /api/scriptentry?path=  — delete file or directory tree
+app.delete("/api/scriptentry", async (req, res) => {
+  const resolved = resolveScriptsEntry(req.query.path);
+  if (!resolved || resolved === SCRIPTS_ROOT) return res.status(400).json({ error: "invalid path" });
+  try {
+    await rm(resolved, { recursive: true, force: false });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PATCH /api/scriptentry  { from, to }  — rename / move
+app.patch("/api/scriptentry", async (req, res) => {
+  const from = resolveScriptsEntry(req.body && req.body.from);
+  const to   = resolveScriptsEntry(req.body && req.body.to);
+  if (!from || !to) return res.status(400).json({ error: "invalid path" });
+  try {
+    await fsRename(from, to);
+    res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

@@ -678,10 +678,67 @@ button:hover { background: #3a3a42; border-color: var(--amber-lo); color: var(--
   flex-direction: column;
   overflow: hidden;
 }
+/* maiden header toolbar */
+.maiden-header-actions {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  margin: 0 10px;
+}
+.maiden-header-actions button {
+  font-size: 11px;
+  padding: 2px 7px;
+  min-width: unset;
+}
+
+/* maiden body = tree + editor side by side */
+.maiden-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* file tree sidebar */
+.maiden-tree {
+  width: 190px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-lo);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.maiden-tree-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.mt-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  user-select: none;
+  color: var(--fg-dim);
+}
+.mt-item:hover { background: var(--raised); color: var(--fg); }
+.mt-item.selected { background: var(--raised); color: var(--amber); }
+.mt-item.dir { color: var(--fg); font-weight: 500; }
+.mt-item.dir:hover { color: var(--amber); }
+.mt-arrow { font-size: 9px; flex-shrink: 0; transition: transform .15s; }
+.mt-arrow.open { transform: rotate(90deg); }
+.mt-name { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.mt-children { border-left: 1px solid var(--border-lo); margin-left: 14px; }
+
 .maiden-editor {
   flex: 1;
-  width: 100%;
   font-size: 13px;
+  overflow: hidden;
 }
 .maiden-footer {
   display: flex;

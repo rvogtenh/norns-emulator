@@ -473,8 +473,37 @@ $("reload-btn").addEventListener("click", (e) => {
 });
 
 // ── maiden script editor ───────────────────────────────────────────────────
-let _maidenEditor = null;
-let _maidenPath = null;
+let _maidenEditor   = null;
+let _maidenPath     = null;   // currently open file in editor
+let _maidenRoot     = "";     // SCRIPTS_DIR root (computed on first open)
+let _maidenSelected = null;   // selected item path in tree
+const _maidenOpen   = new Set(); // expanded folder paths
+
+const NEW_SCRIPT_TEMPLATE = (name) =>
+`-- ${name}
+-- description
+--
+-- E2/E3 : edit
+-- K2/K3 : action
+
+engine.name = "PolyPerc"
+
+function init()
+end
+
+function enc(n, d)
+end
+
+function key(n, z)
+end
+
+function redraw()
+  screen.clear()
+  screen.move(64, 32)
+  screen.text_center("${name}")
+  screen.update()
+end
+`;
 
 function _maidenStatus(msg, kind = "") {
   const el = $("maiden-status");
@@ -482,15 +511,88 @@ function _maidenStatus(msg, kind = "") {
   el.className = "maiden-status" + (kind ? " " + kind : "");
 }
 
-async function openMaiden() {
-  const path = $("script-select").value || lastScriptPath;
-  if (!path) { log("maiden: no script selected", "err"); return; }
-  if (typeof ace === "undefined") { log("maiden: editor failed to load", "err"); return; }
+// ── tree ──────────────────────────────────────────────────────────────────
 
-  _maidenPath = path;
-  $("maiden-name").textContent = path.split("/").pop();
-  $("maiden-overlay").classList.remove("hidden");
+function _mtSelect(el, path) {
+  $("maiden-tree-list").querySelectorAll(".mt-item.selected")
+    .forEach(x => x.classList.remove("selected"));
+  el.classList.add("selected");
+  _maidenSelected = path;
+}
 
+async function _mtRenderDir(parentEl, dir, depth = 0) {
+  let data;
+  try {
+    data = await (await fetch(`${BASE_PATH}/api/files?dir=${encodeURIComponent(dir)}`)).json();
+  } catch { return; }
+
+  for (const d of (data.dirs || [])) {
+    const wrap = document.createElement("div");
+    const row  = document.createElement("div");
+    row.className = "mt-item dir";
+    row.style.paddingLeft = (8 + depth * 14) + "px";
+    const arrow = document.createElement("span");
+    arrow.className = "mt-arrow" + (_maidenOpen.has(d.path) ? " open" : "");
+    arrow.textContent = "▶";
+    const label = document.createElement("span");
+    label.className = "mt-name";
+    label.textContent = d.name;
+    row.append(arrow, label);
+    wrap.appendChild(row);
+    parentEl.appendChild(wrap);
+
+    const children = document.createElement("div");
+    children.className = "mt-children";
+    wrap.appendChild(children);
+
+    if (_maidenOpen.has(d.path)) await _mtRenderDir(children, d.path, depth + 1);
+
+    row.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      _mtSelect(row, d.path);
+      if (_maidenOpen.has(d.path)) {
+        _maidenOpen.delete(d.path);
+        arrow.classList.remove("open");
+        children.innerHTML = "";
+      } else {
+        _maidenOpen.add(d.path);
+        arrow.classList.add("open");
+        await _mtRenderDir(children, d.path, depth + 1);
+      }
+    });
+  }
+
+  for (const f of (data.files || [])) {
+    if (!f.name.endsWith(".lua")) continue;
+    const row = document.createElement("div");
+    row.className = "mt-item" + (_maidenSelected === f.path ? " selected" : "");
+    row.style.paddingLeft = (20 + depth * 14) + "px";
+    const label = document.createElement("span");
+    label.className = "mt-name";
+    label.textContent = f.name;
+    row.appendChild(label);
+    parentEl.appendChild(row);
+    row.addEventListener("click", (e) => {
+      e.stopPropagation();
+      _mtSelect(row, f.path);
+      _maidenOpenFile(f.path);
+    });
+  }
+}
+
+async function _maidenRefreshTree() {
+  if (!_maidenRoot) return;
+  const list = $("maiden-tree-list");
+  list.innerHTML = "";
+  await _mtRenderDir(list, _maidenRoot, 0);
+}
+
+// ── open file in editor ────────────────────────────────────────────────────
+
+async function _maidenOpenFile(filePath) {
+  if (typeof ace === "undefined") return;
+  _maidenPath = filePath;
+  $("maiden-name").textContent = filePath.split("/").pop();
   if (!_maidenEditor) {
     _maidenEditor = ace.edit("maiden-editor");
     _maidenEditor.setTheme("ace/theme/monokai");
@@ -499,20 +601,50 @@ async function openMaiden() {
   }
   _maidenStatus("loading…");
   try {
-    const r = await fetch(`${BASE_PATH}/api/script?path=${encodeURIComponent(path)}`);
+    const r = await fetch(`${BASE_PATH}/api/script?path=${encodeURIComponent(filePath)}`);
     if (!r.ok) throw new Error((await r.json()).error || r.status);
     const { text } = await r.json();
     _maidenEditor.setValue(text, -1);
-    _maidenStatus(path);
+    _maidenStatus(filePath.replace(_maidenRoot + "/", ""));
     _maidenEditor.focus();
   } catch (e) {
     _maidenStatus("could not load: " + e.message, "err");
   }
 }
 
+// ── open modal ────────────────────────────────────────────────────────────
+
+async function openMaiden() {
+  if (typeof ace === "undefined") { log("maiden: editor failed to load", "err"); return; }
+  $("maiden-overlay").classList.remove("hidden");
+
+  // Compute SCRIPTS_ROOT from script list if not yet known
+  if (!_maidenRoot && _allScripts.length) {
+    const s0 = _allScripts[0];
+    _maidenRoot = s0.path.slice(0, s0.path.length - s0.rel.length - 1);
+  }
+
+  await _maidenRefreshTree();
+
+  // Open the currently selected script automatically
+  const selectedPath = $("script-select").value || lastScriptPath;
+  if (selectedPath && selectedPath !== _maidenPath) {
+    // Expand the parent folder in tree
+    const parentDir = selectedPath.slice(0, selectedPath.lastIndexOf("/"));
+    if (parentDir !== _maidenRoot) _maidenOpen.add(parentDir);
+    await _maidenRefreshTree();
+    _maidenSelected = selectedPath;
+    await _maidenOpenFile(selectedPath);
+  } else if (_maidenPath) {
+    _maidenStatus(_maidenPath.replace(_maidenRoot + "/", ""));
+  }
+}
+
 function closeMaiden() {
   $("maiden-overlay").classList.add("hidden");
 }
+
+// ── save ──────────────────────────────────────────────────────────────────
 
 async function saveMaiden() {
   if (!_maidenPath || !_maidenEditor) return false;
@@ -532,6 +664,97 @@ async function saveMaiden() {
     return false;
   }
 }
+
+// ── file-tree operations ─────────────────────────────────────────────────
+
+function _maidenContextDir() {
+  // Returns the directory to use for new-file / new-folder actions.
+  if (!_maidenSelected) return _maidenRoot;
+  // If selected is a .lua file, use its parent
+  if (_maidenSelected.endsWith(".lua")) {
+    return _maidenSelected.slice(0, _maidenSelected.lastIndexOf("/"));
+  }
+  return _maidenSelected; // it's a folder
+}
+
+$("maiden-new-file").addEventListener("click", async () => {
+  const name = prompt("New file name (.lua):");
+  if (!name) return;
+  const fname = name.endsWith(".lua") ? name : name + ".lua";
+  const dir   = _maidenContextDir();
+  const fpath = dir + "/" + fname;
+  const scriptName = fname.replace(/\.lua$/, "");
+  try {
+    const r = await fetch(`${BASE_PATH}/api/script`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: fpath, text: NEW_SCRIPT_TEMPLATE(scriptName) }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    _maidenOpen.add(dir);
+    await _maidenRefreshTree();
+    await loadScriptList();
+    _maidenSelected = fpath;
+    await _maidenOpenFile(fpath);
+    _maidenStatus("created " + fname, "ok");
+  } catch (e) { _maidenStatus("create failed: " + e.message, "err"); }
+});
+
+$("maiden-new-folder").addEventListener("click", async () => {
+  const name = prompt("New folder name:");
+  if (!name) return;
+  const dir = _maidenContextDir();
+  const fpath = dir + "/" + name;
+  try {
+    const r = await fetch(`${BASE_PATH}/api/scriptdir`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: fpath }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    await _maidenRefreshTree();
+    _maidenStatus("folder created", "ok");
+  } catch (e) { _maidenStatus("mkdir failed: " + e.message, "err"); }
+});
+
+$("maiden-rename-entry").addEventListener("click", async () => {
+  if (!_maidenSelected) return;
+  const oldName = _maidenSelected.split("/").pop();
+  const newName = prompt("Rename to:", oldName);
+  if (!newName || newName === oldName) return;
+  const to = _maidenSelected.slice(0, _maidenSelected.lastIndexOf("/")) + "/" + newName;
+  try {
+    const r = await fetch(`${BASE_PATH}/api/scriptentry`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ from: _maidenSelected, to }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    if (_maidenPath === _maidenSelected) _maidenPath = to;
+    _maidenSelected = to;
+    await _maidenRefreshTree();
+    await loadScriptList();
+    _maidenStatus("renamed to " + newName, "ok");
+  } catch (e) { _maidenStatus("rename failed: " + e.message, "err"); }
+});
+
+$("maiden-delete-entry").addEventListener("click", async () => {
+  if (!_maidenSelected) return;
+  const name = _maidenSelected.split("/").pop();
+  if (!confirm(`Delete "${name}"?`)) return;
+  try {
+    const r = await fetch(`${BASE_PATH}/api/scriptentry?path=${encodeURIComponent(_maidenSelected)}`,
+      { method: "DELETE" });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    if (_maidenPath === _maidenSelected) { _maidenPath = null; $("maiden-name").textContent = "—"; if (_maidenEditor) _maidenEditor.setValue(""); }
+    _maidenSelected = null;
+    await _maidenRefreshTree();
+    await loadScriptList();
+    _maidenStatus("deleted " + name, "ok");
+  } catch (e) { _maidenStatus("delete failed: " + e.message, "err"); }
+});
+
+// ── button wiring ─────────────────────────────────────────────────────────
 
 $("maiden-btn").addEventListener("click", (e) => { openMaiden(); e.target.blur(); });
 $("maiden-close").addEventListener("click", closeMaiden);

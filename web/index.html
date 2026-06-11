@@ -287,9 +287,20 @@
     <div class="maiden-dialog">
       <div class="fp-header">
         <span class="fp-title">maiden — <span id="maiden-name">script</span></span>
+        <div class="maiden-header-actions">
+          <button id="maiden-new-file"   title="new .lua file">+file</button>
+          <button id="maiden-new-folder" title="new folder">+folder</button>
+          <button id="maiden-rename-entry" title="rename selected">rename</button>
+          <button id="maiden-delete-entry" title="delete selected">delete</button>
+        </div>
         <button id="maiden-close" title="close">✕</button>
       </div>
-      <div id="maiden-editor" class="maiden-editor"></div>
+      <div class="maiden-body">
+        <div id="maiden-tree" class="maiden-tree">
+          <div id="maiden-tree-list" class="maiden-tree-list"></div>
+        </div>
+        <div id="maiden-editor" class="maiden-editor"></div>
+      </div>
       <div class="maiden-footer">
         <span id="maiden-status" class="maiden-status"></span>
         <button id="maiden-save">save</button>
