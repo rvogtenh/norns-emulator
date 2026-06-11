@@ -34,6 +34,15 @@ export class ArcUI {
     return out;
   }
 
+  // Convert client coordinates to canvas pixel coordinates (accounts for CSS scaling).
+  _toCanvas(clientX, clientY) {
+    const rect = this.canvas.getBoundingClientRect();
+    return {
+      x: (clientX - rect.left) * (this.canvas.width  / rect.width),
+      y: (clientY - rect.top)  * (this.canvas.height / rect.height),
+    };
+  }
+
   ringAt(mx, my) {
     const centers = this.ringCenters();
     for (let i = 0; i < centers.length; i++) {
@@ -46,8 +55,8 @@ export class ArcUI {
 
   _bind() {
     this.canvas.addEventListener("wheel", (e) => {
-      const rect = this.canvas.getBoundingClientRect();
-      const ring = this.ringAt(e.clientX - rect.left, e.clientY - rect.top);
+      const { x, y } = this._toCanvas(e.clientX, e.clientY);
+      const ring = this.ringAt(x, y);
       if (ring) {
         e.preventDefault();
         this.onDelta(ring, e.deltaY > 0 ? 1 : -1);
@@ -55,22 +64,21 @@ export class ArcUI {
     }, { passive: false });
 
     this.canvas.addEventListener("pointerdown", (e) => {
-      const rect = this.canvas.getBoundingClientRect();
-      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-      const ring = this.ringAt(mx, my);
+      const { x, y } = this._toCanvas(e.clientX, e.clientY);
+      const ring = this.ringAt(x, y);
       if (ring) {
         e.preventDefault();
         this.dragRing = ring;
         this.canvas.setPointerCapture?.(e.pointerId);
         const c = this.ringCenters()[ring - 1];
-        this.lastAngle = Math.atan2(my - c.y, mx - c.x);
+        this.lastAngle = Math.atan2(y - c.y, x - c.x);
       }
     });
     this.canvas.addEventListener("pointermove", (e) => {
       if (!this.dragRing) return;
-      const rect = this.canvas.getBoundingClientRect();
+      const { x, y } = this._toCanvas(e.clientX, e.clientY);
       const c = this.ringCenters()[this.dragRing - 1];
-      const a = Math.atan2(e.clientY - rect.top - c.y, e.clientX - rect.left - c.x);
+      const a = Math.atan2(y - c.y, x - c.x);
       let da = a - this.lastAngle;
       if (da > Math.PI) da -= 2 * Math.PI;
       if (da < -Math.PI) da += 2 * Math.PI;
