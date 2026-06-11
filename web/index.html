@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Norns Emulator</title>
+  <!-- Real norns device fonts, used ONLY by the screen canvas (js/screen.js).
+       The surrounding web UI keeps its own font stack (css/style.css). -->
+  <link rel="stylesheet" href="css/fonts.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <header>
+      <h1>Norns<span class="dim"> Emulator</span></h1>
+      <div class="status">
+        <span id="conn" class="badge off">disconnected</span>
+        <span id="script-name" class="badge">— no script —</span>
+        <button id="settings-btn" title="Settings"><span>⚙</span></button>
+        <button id="help-btn" title="Script README">?</button>
+      </div>
+    </header>
+
+    <main>
+
+      <!-- ── left column: norns + panel below ── -->
+      <div class="left-col">
+
+      <!-- ── the norns device ── -->
+      <section class="device">
+
+        <!-- Top row: K1 + E1, horizontal, upper left -->
+        <div class="controls-top">
+          <div class="ctrl-pair-h">
+            <button class="key" data-n="1" id="key1">K1<kbd>a</kbd></button>
+            <div class="enc" data-n="1">
+              <label>E1 <kbd>q</kbd><kbd>w</kbd></label>
+              <div class="dial-wrap">
+                <div class="dial-ring" id="ring1"></div>
+                <div class="dial" id="enc1"><div class="dial-dot"></div></div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /ctrl-pair-h -->
+
+        <!-- Screen -->
+        <div class="screen-wrap">
+          <canvas id="screen" width="128" height="64"></canvas>
+        </div>
+
+        <!-- Bottom row: E2+K2 / E3+K3, stacked, right-aligned -->
+        <div class="controls-bottom">
+          <div class="ctrl-pair-v">
+            <div class="enc" data-n="2">
+              <label>E2 <kbd>e</kbd><kbd>r</kbd></label>
+              <div class="dial-wrap">
+                <div class="dial-ring" id="ring2"></div>
+                <div class="dial" id="enc2"><div class="dial-dot"></div></div>
+              </div>
+            </div>
+            <button class="key" data-n="2" id="key2">K2<kbd>s</kbd></button>
+          </div>
+          <div class="ctrl-pair-v">
+            <div class="enc" data-n="3">
+              <label>E3 <kbd>u</kbd><kbd>i</kbd></label>
+              <div class="dial-wrap">
+                <div class="dial-ring" id="ring3"></div>
+                <div class="dial" id="enc3"><div class="dial-dot"></div></div>
+              </div>
+            </div>
+            <button class="key" data-n="3" id="key3">K3<kbd>d</kbd></button>
+          </div>
+        </div>
+
+      </section><!-- /device -->
+
+      <!-- ── mixer + tape (under norns, stays here in responsive layout) ── -->
+      <div class="mixtape">
+
+        <div class="mixtape-sec">
+          <div class="dev-header">
+            <span>mixer</span>
+            <div class="hdr-btns">
+              <button id="mixer-reset">reset</button>
+              <button id="mixer-toggle">hide</button>
+            </div>
+          </div>
+          <div id="mixer-body" class="mixer-body">
+            <div class="mix-strip" data-mix="out"><div class="vfader"><input type="range" min="0" max="100" value="60"><canvas class="strip-meter" width="16" height="120"></canvas></div><label>out</label></div>
+            <div class="mix-strip" data-mix="in"><div class="vfader"><input type="range" min="0" max="100" value="50"><canvas class="strip-meter" width="16" height="120"></canvas></div><label>in</label></div>
+            <div class="mix-strip" data-mix="mon"><div class="vfader"><input type="range" min="0" max="100" value="0"><canvas class="strip-meter" width="16" height="120"></canvas></div><label>mon</label></div>
+            <div class="mix-strip" data-mix="eng"><div class="vfader"><input type="range" min="0" max="100" value="100"><canvas class="strip-meter" width="16" height="120"></canvas></div><label>eng</label></div>
+            <div class="mix-strip" data-mix="cut"><div class="vfader"><input type="range" min="0" max="100" value="100"><canvas class="strip-meter" width="16" height="120"></canvas></div><label>cut</label></div>
+            <div class="mix-strip" data-mix="tp"><div class="vfader"><input type="range" min="0" max="100" value="100"><canvas class="strip-meter" width="16" height="120"></canvas></div><label>tp</label></div>
+          </div>
+        </div>
+
+        <div class="mixtape-sec">
+          <div class="dev-header">
+            <span>tape</span>
+            <button id="tape-toggle">hide</button>
+          </div>
+          <div id="tape-body" class="tape-body">
+            <button id="tape-rec" class="tape-btn">● rec</button>
+            <button id="tape-play" class="tape-btn">▶ play</button>
+            <button id="tape-loop" class="tape-btn" title="loop playback">↻ loop</button>
+            <button id="tape-save" class="tape-btn" title="download recording">⤓</button>
+            <span id="tape-status">ready</span>
+          </div>
+        </div>
+
+      </div><!-- /mixtape -->
+
+      </div><!-- /left-col -->
+
+      <!-- ── right column: arc, grid, panel ── -->
+      <section class="devices-extra">
+
+        <div class="arc-panel">
+          <div class="dev-header">
+            <span>arc</span>
+            <button id="arc-toggle">show</button>
+          </div>
+          <canvas id="arc" class="arc hidden" width="520" height="140"></canvas>
+        </div>
+
+        <div class="grid-panel">
+          <div class="dev-header">
+            <span>grid</span>
+            <button id="grid-toggle">show</button>
+          </div>
+          <div id="grid" class="grid hidden"></div>
+        </div>
+
+        <!-- ── panel (script, MIDI, params, console) ── -->
+        <section class="panel">
+
+          <div class="row script-browser-row">
+            <select id="script-folder"></select>
+            <select id="script-select"></select>
+          </div>
+          <div class="row">
+            <label></label>
+            <button id="load-btn">load</button>
+            <button id="reload-btn" title="reload current script">↻</button>
+          </div>
+
+          <div class="panel-section row">
+            <label>tempo</label>
+            <input id="tempo" type="number" value="110" min="20" max="300" />
+            <span class="unit">bpm</span>
+            <label class="chk-label" style="margin-left:8px">
+              <input type="checkbox" id="audio-enable" /> audio on
+            </label>
+            <label class="chk-label" style="margin-left:8px" title="Enable microphone input for softcut recording">
+              <input type="checkbox" id="mic-enable" /> mic in
+            </label>
+            <input type="range" id="mic-gain" min="1" max="8" step="0.5" value="2"
+                   title="mic input gain (1–8×)" style="width:60px;accent-color:var(--amber)" />
+            <span id="mic-gain-label" style="font-size:11px;color:var(--fg-faint)">×2</span>
+          </div>
+
+          <div class="row">
+            <label>MIDI in</label>
+            <select id="midi-in"><option value="">— none —</option></select>
+            <button id="midi-connect" class="hidden" title="Grant MIDI permission">connect</button>
+          </div>
+          <div class="row">
+            <label>MIDI out</label>
+            <select id="midi-out"><option value="">— none —</option></select>
+          </div>
+
+          <div class="panel-section">
+            <div class="row params-header">
+              <span id="params-toggle" class="params-toggle">▶ params</span>
+              <span id="params-count" class="params-count"></span>
+            </div>
+            <div id="params-panel" class="params-panel collapsed">
+              <div class="params-toolbar">
+                <button id="pset-save" title="save current values as a PSET (asks for a name)">save</button>
+                <input id="pset-n" type="number" value="1" min="1" max="99" title="slot to save into" />
+                <button id="pset-load" title="load the PSET in this slot">load</button>
+              </div>
+              <div id="pset-list" class="pset-list"></div>
+              <div id="params-list" class="params-list"></div>
+            </div>
+          </div>
+
+          <div class="panel-section repl">
+            <input id="repl-input" type="text"
+                   placeholder="lua › e.g.  params:get('cutoff')" />
+          </div>
+
+          <pre id="console" class="console"></pre>
+
+        </section>
+
+      </section>
+
+    </main>
+
+  </div><!-- /app -->
+
+  <!-- ── help / README modal ── -->
+  <div id="help-overlay" class="help-overlay hidden" aria-modal="true" role="dialog">
+    <div class="help-dialog">
+      <div class="help-header">
+        <span id="help-title" class="help-title">README</span>
+        <button id="help-close" title="close">✕</button>
+      </div>
+      <div id="help-body" class="help-body"></div>
+    </div>
+  </div>
+
+  <!-- ── settings modal ── -->
+  <div id="settings-overlay" class="help-overlay hidden" aria-modal="true" role="dialog">
+    <div class="help-dialog">
+      <div class="help-header">
+        <span class="help-title">Settings</span>
+        <button id="settings-close" title="close">✕</button>
+      </div>
+      <div class="help-body">
+        <div class="setting-row">
+          <label for="screen-font">Screen font</label>
+          <select id="screen-font">
+            <option value="norns">norns (default · pixel)</option>
+            <option value="VeraMono">VeraMono · mono</option>
+            <option value="Vera">Vera</option>
+            <option value="Roboto-Regular">Roboto Regular</option>
+            <option value="Roboto-Medium">Roboto Medium</option>
+            <option value="liquid">liquid · pixel</option>
+            <option value="Particle">Particle · pixel</option>
+            <option value="basis33">basis33 · pixel</option>
+          </select>
+        </div>
+        <p class="setting-hint">The norns pixel font matches the device exactly;
+          VeraMono is more legible at 5× zoom. Applies live; saved across reloads.</p>
+
+        <hr class="setting-sep" />
+
+        <div class="setting-row">
+          <label for="set-arc-sens">ARC sensitivity</label>
+          <input type="range" id="set-arc-sens" min="1" max="10" step="1" />
+          <span id="set-arc-sens-val" style="min-width:1.5em;text-align:right;font-size:.85em;opacity:.7"></span>
+        </div>
+        <div class="setting-row">
+          <label for="set-arc-len">LED length</label>
+          <input type="range" id="set-arc-len" min="2" max="20" step="1" />
+          <span id="set-arc-len-val" style="min-width:1.5em;text-align:right;font-size:.85em;opacity:.7"></span>
+        </div>
+        <div class="setting-row">
+          <label for="set-arc-width">LED width</label>
+          <input type="range" id="set-arc-width" min="1" max="8" step="1" />
+          <span id="set-arc-width-val" style="min-width:1.5em;text-align:right;font-size:.85em;opacity:.7"></span>
+        </div>
+        <p class="setting-hint">Controls how fast the ARC ring responds to mouse drag and LED appearance (defaults: sensitivity 5, length 8, width 3).</p>
+
+        <hr class="setting-sep" />
+
+        <div class="setting-row">
+          <label for="set-bg">Background</label>
+          <input type="range" id="set-bg" min="0" max="64" />
+        </div>
+        <div class="setting-row">
+          <label for="set-box">Panels / boxes</label>
+          <input type="range" id="set-box" min="8" max="90" />
+        </div>
+        <div class="setting-row">
+          <label for="set-accent">Accent colour</label>
+          <input type="color" id="set-accent" />
+        </div>
+        <div class="setting-row">
+          <button id="set-reset" class="setting-btn">Reset to defaults</button>
+        </div>
+        <p class="setting-hint">Background and panel sliders set the grey level of
+          the page and boxes; accent recolours highlights. Live &amp; saved.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── file picker modal ── -->
+  <div id="filepicker-overlay" class="fp-overlay hidden" aria-modal="true" role="dialog">
+    <div class="fp-dialog">
+      <div class="fp-header">
+        <span class="fp-title">select audio file</span>
+        <button id="fp-close" title="cancel">✕</button>
+      </div>
+      <div class="fp-breadcrumb" id="fp-breadcrumb"></div>
+      <div id="fp-list" class="fp-list"></div>
+      <div class="fp-footer">
+        <span id="fp-selected" class="fp-selected-name"></span>
+        <button id="fp-cancel">cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

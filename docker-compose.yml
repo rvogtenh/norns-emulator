@@ -1,0 +1,46 @@
+services:
+  norns-emulator:
+    build: .
+    container_name: norns-emulator
+    ports:
+      - "5151:5151"
+    environment:
+      - PORT=5151
+      - SCRIPTS_DIR=/scripts
+      # Match real norns: scripts hardcode os.getenv("HOME").."/dust/audio".
+      # The /home/we/dust/{audio,data} mounts below resolve against this.
+      - HOME=/home/we
+      - VIRTUAL_HOST=norns.local
+      - VIRTUAL_PORT=5151
+      - NO_LUA_WATCH=1
+    volumes:
+      # Live-mount the source for development (hot reload via node --watch).
+      - ./server:/app/server
+      - ./matron:/app/matron
+      - ./web:/app/web
+      # Mount the norns script library so it can be loaded in the browser.
+      # ../current set and ../new project from projects_norns:
+      - "../current set:/scripts/current set"
+      - "../new project:/scripts/new project"
+      # Bundled demo scripts:
+      - "./examples:/scripts/examples"
+      # User audio files (norns _path.audio inside the container):
+      - "./audio:/audio"
+      # Also mount as the norns-native path so hardcoded /home/we/dust/audio
+      # references (e.g. clip sample paths in collection psets saved on real
+      # hardware) resolve inside the container:
+      - "./audio:/home/we/dust/audio"
+      # Persistent script data (collections, psets, presets):
+      - "./data:/data"
+      # Also mount as the norns-native path so hardcoded /home/we/dust/data references work:
+      - "./data:/home/we/dust/data"
+    command: ["node", "--watch", "--watch-path=server", "server/index.js"]
+    restart: unless-stopped
+    networks:
+      - default
+      - webproxy
+
+networks:
+  webproxy:
+    name: webproxy
+    external: true

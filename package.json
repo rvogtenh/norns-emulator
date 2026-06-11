@@ -1,0 +1,18 @@
+{
+  "name": "norns-emulator",
+  "version": "0.1.0",
+  "description": "Browser-based emulator for monome norns (screen, encoders, keys, grid, arc) — test norns Lua scripts locally without hardware.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

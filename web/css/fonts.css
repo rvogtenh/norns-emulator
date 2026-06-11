@@ -1,0 +1,29 @@
+/* Norns screen fonts — copied from norns/resources (the real device fonts).
+   Used ONLY by the screen canvas (js/screen.js) via font_face; the
+   surrounding web UI keeps its own font stack. */
+@font-face { font-family: "Particle"; src: url("../fonts/Particle.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-Black"; src: url("../fonts/Roboto-Black.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-BlackItalic"; src: url("../fonts/Roboto-BlackItalic.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-Bold"; src: url("../fonts/Roboto-Bold.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-BoldItalic"; src: url("../fonts/Roboto-BoldItalic.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-Italic"; src: url("../fonts/Roboto-Italic.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-Light"; src: url("../fonts/Roboto-Light.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-LightItalic"; src: url("../fonts/Roboto-LightItalic.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-Medium"; src: url("../fonts/Roboto-Medium.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-MediumItalic"; src: url("../fonts/Roboto-MediumItalic.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-Regular"; src: url("../fonts/Roboto-Regular.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-Thin"; src: url("../fonts/Roboto-Thin.ttf"); font-display: block; }
+@font-face { font-family: "Roboto-ThinItalic"; src: url("../fonts/Roboto-ThinItalic.ttf"); font-display: block; }
+@font-face { font-family: "Vera"; src: url("../fonts/Vera.ttf"); font-display: block; }
+@font-face { font-family: "VeraBI"; src: url("../fonts/VeraBI.ttf"); font-display: block; }
+@font-face { font-family: "VeraBd"; src: url("../fonts/VeraBd.ttf"); font-display: block; }
+@font-face { font-family: "VeraIt"; src: url("../fonts/VeraIt.ttf"); font-display: block; }
+@font-face { font-family: "VeraMoBI"; src: url("../fonts/VeraMoBI.ttf"); font-display: block; }
+@font-face { font-family: "VeraMoBd"; src: url("../fonts/VeraMoBd.ttf"); font-display: block; }
+@font-face { font-family: "VeraMoIt"; src: url("../fonts/VeraMoIt.ttf"); font-display: block; }
+@font-face { font-family: "VeraMono"; src: url("../fonts/VeraMono.ttf"); font-display: block; }
+@font-face { font-family: "VeraSe"; src: url("../fonts/VeraSe.ttf"); font-display: block; }
+@font-face { font-family: "VeraSeBd"; src: url("../fonts/VeraSeBd.ttf"); font-display: block; }
+@font-face { font-family: "basis33"; src: url("../fonts/basis33.ttf"); font-display: block; }
+@font-face { font-family: "liquid"; src: url("../fonts/liquid.ttf"); font-display: block; }
+@font-face { font-family: "norns"; src: url("../fonts/norns.ttf"); font-display: block; }
